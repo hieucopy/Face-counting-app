@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Image to Count Faces</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        .image-preview {
+            display: none;
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        #result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container text-center">
+        <h1 class="mb-4">Upload Image to Count Faces</h1>
+        <form id="upload-form" enctype="multipart/form-data">
+            <div class="form-group">
+                <input type="file" name="image" id="image" class="form-control-file" accept="image/*" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Upload</button>
+        </form>
+        <img id="image-preview" class="image-preview" alt="Image Preview">
+        <div id="result" class="alert alert-info" role="alert"></div>
+    </div>
+
+    <script>
+        document.getElementById('upload-form').onsubmit = async function(event) {
+            event.preventDefault();
+            const formData = new FormData();
+            const fileField = document.querySelector('input[type="file"]');
+            formData.append('image', fileField.files[0]);
+
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                document.getElementById('result').textContent = `Number of faces: ${result.number_of_faces}`;
+                document.getElementById('result').classList.remove('alert-danger');
+                document.getElementById('result').classList.add('alert-info');
+            } else {
+                document.getElementById('result').textContent = `Error: ${result.error}`;
+                document.getElementById('result').classList.remove('alert-info');
+                document.getElementById('result').classList.add('alert-danger');
+            }
+        };
+
+        document.getElementById('image').onchange = function(event) {
+            const [file] = event.target.files;
+            if (file) {
+                const preview = document.getElementById('image-preview');
+                preview.src = URL.createObjectURL(file);
+                preview.style.display = 'block';
+            }
+        };
+    </script>
+</body>
+</html>
